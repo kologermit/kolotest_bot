@@ -10,11 +10,11 @@ bot = telebot.TeleBot(config.TOKEN)
 def welcome(message):
     sti = open('welcome.jpg', 'rb')
     bot.send_sticker(message.chat.id, sti)
-    config.players[message.from_user.id] = dict(play_stat=False, wins=0, losses=0, draws=0, skin=0)
+    config.players[message.from_user.id] = dict(play_stat=False, wins=0, losses=0, draws=0, cansled=0, count=0, skin=0)
     # keyboard
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     play = types.KeyboardButton("Играть с ботом")
-    static = types.KeyboardButton("Статистка")
+    static = types.KeyboardButton("Статистика")
  
     markup.add(play)
     markup.add(static)
@@ -61,17 +61,25 @@ def start_play(message):
                 )
                 end = types.KeyboardButton("Закончить игру")
                 markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-                bot.send_message(message.chat.id, config.error_play_button, reply_markup=markup)
+                bot.send_message(message.chat.id, config.error_play_button_message, reply_markup=markup)
         elif (message.text == 'Закончить игру' or message.text == '/end') and config.players[message.from_user.id]["play_stat"] != False:
+            config.players[message.from_user.id]["cansled"] += 1
+            config.players[message.from_user.id]["count"] += 1
             config.players[message.from_user.id]["play_stat"] = False
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             play = types.KeyboardButton("Играть с ботом")
-            static = types.KeyboardButton("Статистка (не работает)")
+            static = types.KeyboardButton("Статистика")
             markup.add(play)
             markup.add(static)
-            bot.send_message(message.chat.id, config.end_game, reply_markup=markup)
-        elif (message.text == 'Статистка'):
-            bot.send_message(message.chat.id, config.static)
+            bot.send_message(message.chat.id, config.cancel_game_message, reply_markup=markup)
+        elif (message.text == 'Статистика'):
+            bot.send_message(message.chat.id, config.static_message.format(
+            	config.players[message.from_user.id]["count"],
+            	config.players[message.from_user.id]["wins"],
+            	config.players[message.from_user.id]["losses"],
+            	config.players[message.from_user.id]["draws"],
+            	config.players[message.from_user.id]["cansled"]
+             ))
         else:
             bot.send_message(message.chat.id, config.not_message)
 
